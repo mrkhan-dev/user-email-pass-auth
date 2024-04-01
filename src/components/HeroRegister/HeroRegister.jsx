@@ -12,6 +12,15 @@ const HeroRegister = () => {
     const email = e.target.email.value;
     const password = e.target.password.value;
     console.log(email, password);
+    // check password character
+    if (password.length < 8) {
+      setRegError("Password Should be at least 8 characters");
+      return;
+    } else if (!/[A-Z]/.test(password)) {
+      setRegError("Your password should have at least one uppercase character");
+    }
+
+    // reset error
     setSuccess("");
     setRegError("");
     // create user
@@ -73,8 +82,16 @@ const HeroRegister = () => {
                 <button className="btn btn-primary">Register</button>
               </div>
             </form>
-            {regError && <p className="mb-4 mx-4 text-red-600">{regError}</p>}
-            {success && <p className="mb-4 mx-4 text-green-600">{success}</p>}
+            {regError && (
+              <p className="mb-4 mx-4 flex justify-center text-red-600">
+                {regError}
+              </p>
+            )}
+            {success && (
+              <p className="mb-4 mx-4 flex justify-center text-green-600">
+                {success}
+              </p>
+            )}
           </div>
         </div>
       </div>
