@@ -1,16 +1,24 @@
-import {createUserWithEmailAndPassword} from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 import auth from "../../firebase/firebase.config";
 import {useState} from "react";
+import {FaRegEye, FaRegEyeSlash} from "react-icons/fa6";
+import {Link} from "react-router-dom";
+import toast from "react-hot-toast";
 
 const HeroRegister = () => {
   const [success, setSuccess] = useState("");
   const [regError, setRegError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = (e) => {
     e.preventDefault();
     console.log("form submitted");
     const email = e.target.email.value;
     const password = e.target.password.value;
+    const terms = e.target.terms.checked;
     console.log(email, password);
     // check password character
     if (password.length < 8) {
@@ -18,6 +26,10 @@ const HeroRegister = () => {
       return;
     } else if (!/[A-Z]/.test(password)) {
       setRegError("Your password should have at least one uppercase character");
+      return;
+    } else if (!terms) {
+      setRegError("please accept our terms & conditions");
+      return;
     }
 
     // reset error
@@ -27,11 +39,17 @@ const HeroRegister = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
         console.log(result);
-        setSuccess("User Created Successfully");
+        setSuccess("Register Successful");
+
+        // send verification email
+        sendEmailVerification(result.user).then(() => {
+          toast.success("OTP sent successful");
+        });
       })
       .catch((error) => {
         console.error(error);
-        setRegError(error.message);
+        // setRegError(error.message);
+        setRegError("This account already exist ");
       });
   };
 
@@ -61,22 +79,39 @@ const HeroRegister = () => {
                   required
                 />
               </div>
-              <div className="form-control">
+              <div className="form-control relative">
                 <label className="label">
                   <span className="label-text">Password</span>
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="password"
                   className="input input-bordered"
                   required
                 />
-                <label className="label">
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute mt-[52px] ml-[250px] text-xl lg:ml-[280px] cursor-pointer"
+                >
+                  {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                </span>
+                <div className="mt-4 px-1">
+                  <input
+                    className="cursor-pointer"
+                    type="checkbox"
+                    name="terms"
+                    id=""
+                  />
+                  <label className="ml-2" htmlFor="terms">
+                    Accept our <a href="#">Terms and conditions</a>
+                  </label>
+                </div>
+                {/* <label className="label">
                   <a href="#" className="label-text-alt link link-hover">
                     Forgot password?
                   </a>
-                </label>
+                </label> */}
               </div>
               <div className="form-control mt-6">
                 <button className="btn btn-primary">Register</button>
@@ -92,6 +127,12 @@ const HeroRegister = () => {
                 {success}
               </p>
             )}
+            <p className="text-center mb-4">
+              Already have an account?{" "}
+              <Link className="text-primary" to="/login">
+                Login
+              </Link>{" "}
+            </p>
           </div>
         </div>
       </div>
